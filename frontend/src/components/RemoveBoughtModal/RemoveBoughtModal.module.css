@@ -1,0 +1,54 @@
+.summary {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.listItem {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-between;
+}
+
+.bought {
+  color: var(--green);
+}
+
+.btnGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btnSecondary {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--card-border);
+}
+
+.btnRemove {
+  background: var(--red);
+  color: #fff;
+}

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Diafilm Katalógus</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --card-bg: #1a1a2e;
+      --card-border: #2a2a3e;
+      --text: #e0e0e0;
+      --text-dim: #888;
+      --accent: #6c5ce7;
+      --accent-light: #a29bfe;
+      --green: #00b894;
+      --red: #e74c3c;
+      --price: #fdcb6e;
+      --sale: #e17055;
+      --shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,15,15,0.95);
+      backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .header h1 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header h1 .count {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: normal;
+    }
+    .search-bar { display: flex; gap: 8px; margin-bottom: 8px; }
+    .search-bar input {
+      flex: 1;
+      padding: 10px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+    .search-bar input:focus { border-color: var(--accent); }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+    .filter-btn {
+      padding: 6px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .products {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 12px 16px;
+    }
+    @media (min-width: 600px) { .products { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1000px) { .products { grid-template-columns: 1fr 1fr 1fr; } }
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      position: relative;
+      transition: all 0.2s;
+      overflow: hidden;
+    }
+    .product-card.selected {
+      border-color: var(--accent);
+      background: #1e1e3a;
+      box-shadow: 0 0 0 1px var(--accent), var(--shadow);
+    }
+    .product-card.bought {
+      opacity: 0.45;
+      border-color: var(--green);
+    }
+    .product-card.bought::after {
+      content: "✓ Megvásárolva";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 11px;
+      background: var(--green);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .product-card.bought.selected { opacity: 0.9; }
+    .product-card.on-sale { border-left: 3px solid var(--sale); }
+    /* Checkbox for selection */
+    .select-box {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 2px solid var(--card-border);
+      background: var(--bg);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: center;
+      user-select: none;
+    }
+    .select-box:active { transform: scale(0.9); }
+    .select-box.checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .select-box.checked::after {
+      content: "✓";
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    /* Clickable image and title */
+    .product-link {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+      text-decoration: none;
+      color: inherit;
+    }
+    .product-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #333;
+      flex-shrink: 0;
+    }
+    .product-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .product-title {
+      font-size: 14px;
+      line-height: 1.3;
+      font-weight: 600;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      transition: text-decoration-color 0.2s;
+    }
+    .product-link:hover .product-title { text-decoration-color: var(--accent-light); }
+    .product-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .product-price { font-size: 14px; color: var(--price); font-weight: 700; }
+    .product-price.compare { text-decoration: line-through; color: var(--text-dim); font-size: 12px; }
+    .product-discount { font-size: 11px; color: var(--sale); font-weight: 600; }
+    .sale-badge {
+      font-size: 10px;
+      background: var(--sale);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .product-tags {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15,15,15,0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--card-border);
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 100;
+    }
+    .selection-info { flex: 1; font-size: 14px; }
+    .selection-info .num { color: var(--accent-light); font-weight: 700; }
+    .selection-info .total { color: var(--price); font-weight: 700; }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:disabled { opacity: 0.4; }
+    .btn-secondary { background: var(--card-bg); color: var(--text); border: 1px solid var(--card-border); }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal h2 { margin-bottom: 12px; font-size: 18px; }
+    .modal .summary { margin-bottom: 16px; font-size: 14px; color: var(--text-dim); }
+    .modal .order-list { max-height: 300px; overflow-y: auto; margin-bottom: 16px; font-size: 13px; }
+    .modal .order-list-item {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+    }
+    .modal .btn-group { display: flex; gap: 8px; }
+    .modal .btn-group .btn { flex: 1; }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--card-border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading { text-align: center; padding: 40px; color: var(--text-dim); }
+    .result-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; display: none; }
+    .result-box.success { background: rgba(0,184,148,0.15); border: 1px solid var(--green); color: var(--green); }
+    .result-box.error { background: rgba(231,76,60,0.15); border: 1px solid var(--red); color: var(--red); }
+    .checkout-link {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 10px 20px;
+      background: var(--green);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎬 Diafilm Katalógus <span class="count" id="totalCount"></span></h1>
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="🔍 Keresés cím vagy tag alapján..." autocomplete="off">
+    </div>
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">Összes</button>
+      <button class="filter-btn" data-filter="sale">Akciós</button>
+      <button class="filter-btn" data-filter="selected">Kijelölt (<span id="selectedCount">0</span>)</button>
+      <button class="filter-btn" data-filter="bought">Megvett (<span id="boughtCount">0</span>)</button>
+      <button class="filter-btn active" data-filter="hideBought" id="hideBoughtBtn">Elrejti vásároltakat</button>
+    </div>
+  </div>
+
+  <div class="products" id="productList">
+    <div class="loading">Betöltés...</div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="selection-info">
+      <span class="num" id="barCount">0</span> kijelölve ·
+      <span class="total" id="barTotal">0 Ft</span>
+    </div>
+    <button class="btn btn-secondary" id="clearBtn" onclick="clearSelection()">Törlés</button>
+    <button class="btn btn-primary" id="removeBoughtBtn" onclick="showRemoveBoughtModal()" style="display:none;background:var(--red)">Eltávolít</button>
+    <button class="btn btn-primary" id="orderBtn" onclick="showOrderModal()" disabled>Rendelés</button>
+  </div>
+
+  <!-- Remove from bought confirmation modal -->
+  <div class="modal-overlay" id="removeBoughtModal">
+    <div class="modal">
+      <h2>↩ Gyűjteményből eltávolítás</h2>
+      <div class="summary" id="removeBoughtSummary"></div>
+      <div class="order-list" id="removeBoughtList"></div>
+      <div class="result-box error" id="removeBoughtError" style="display:none"></div>
+      <div class="btn-group" style="margin-top:12px">
+        <button class="btn btn-secondary" style="flex:1" onclick="closeRemoveBoughtModal()">Mégse</button>
+        <button class="btn btn-primary" style="flex:1;background:var(--red)" onclick="confirmRemoveBought()">Eltávolítom</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Price history modal -->
+  <div class="modal-overlay" id="priceHistoryModal">
+    <div class="modal">
+      <h2>📈 Ártörténet</h2>
+      <div id="priceHistoryContent"></div>
+      <div class="btn-group" style="margin-top:12px">
+        <button class="btn btn-primary" style="flex:1" onclick="closePriceHistory()">Bezárás</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal">
+      <h2>🛒 Rendelés összesítő</h2>
+      <div class="summary" id="orderSummary"></div>
+      <div class="order-list" id="orderList"></div>
+
+      <!-- Step 1: Assemble cart -->
+      <div id="stepAssemble">
+        <div class="result-box error" id="resultError"></div>
+        <div id="orderLoading" style="display:none"><div class="spinner"></div><p style="text-align:center;margin-top:8px;color:var(--text-dim)">Kosár összeállítása...</p></div>
+        <div class="btn-group" id="assembleButtons" style="flex-wrap:wrap">
+          <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Mégse</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="copyOrderList()" id="copyBtn">📋 Másolás</button>
+          <button class="btn btn-primary" style="flex:2" onclick="submitOrder()">Kosárba teszem</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Cart assembled, waiting for checkout -->
+      <div id="stepCheckout" style="display:none">
+        <div class="result-box success" style="display:block">
+          <p>✅ Kosár összeállítva a diafilm.hu-n!</p>
+          <p style="margin-top:6px;font-size:13px;color:var(--text-dim)">Nyisd meg a pénztárt, fizess, majd erősítsd meg lent.</p>
+          <a href="#" id="checkoutLink" class="checkout-link" target="_blank">Pénztár megnyitása →</a>
+        </div>
+        <div class="btn-group" style="margin-top:12px">
+          <button class="btn btn-secondary" style="flex:1" onclick="cancelOrder()">↩ Mégse, nem rendelek</button>
+          <button class="btn btn-primary" style="flex:1" onclick="confirmOrder()">✓ Megrendeltem</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirmed -->
+      <div id="stepConfirmed" style="display:none">
+        <div class="result-box success" style="display:block">
+          <p>✅ Rendelés rögzítve! Kijelölt tételek megvásároltként jelölve.</p>
+        </div>
+        <div class="btn-group" style="margin-top:12px">
+          <button class="btn btn-primary" style="flex:1" onclick="closeModal()">Kész</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let products = [];
+let boughtData = [];          // enriched: [{id, boughtAt, product: {...}}]
+let boughtMap = new Map();    // id -> {boughtAt, product} for quick lookup
+let boughtIds = new Set();    // derived from boughtMap keys
+let priceHistory = [];        // [{id, title, price, compareAtPrice, date}]
+let selectedIds = new Set();
+let currentFilter = 'all';
+let hideBought = true;
+
+const PROJECTOR_ID = 8462548992273;
+
+// ── Load data ─────────────────────────────────────────────────
+async function loadData() {
+  const [prodRes, boughtRes, selectedRes, histRes] = await Promise.all([
+    fetch('/api/products').then(r => r.json()),
+    fetch('/api/bought').then(r => r.json()),
+    fetch('/api/selection').then(r => r.json()),
+    fetch('/api/price-history').then(r => r.json()),
+  ]);
+  products = prodRes;
+  priceHistory = histRes;
+
+  // Build bought data structures (enriched format)
+  setBoughtData(boughtRes);
+
+  // Migrate any existing localStorage selection to server (one-time merge)
+  const localSelection = localStorage.getItem('diafilm_selected');
+  if (localSelection) {
+    const localIds = JSON.parse(localSelection);
+    const serverIds = new Set(selectedRes);
+    let merged = false;
+    for (const id of localIds) {
+      if (!serverIds.has(id)) { serverIds.add(id); merged = true; }
+    }
+    selectedIds = serverIds;
+    if (merged) await saveSelection();
+    localStorage.removeItem('diafilm_selected');
+  } else {
+    selectedIds = new Set(selectedRes);
+  }
+
+  document.getElementById('totalCount').textContent = `(${products.length} diafilm)`;
+  document.getElementById('boughtCount').textContent = boughtIds.size;
+  renderProducts();
+}
+
+function setBoughtData(data) {
+  boughtData = data;
+  boughtMap = new Map();
+  boughtIds = new Set();
+  for (const item of data) {
+    if (typeof item === 'object' && item.id !== undefined) {
+      boughtMap.set(item.id, item);
+      boughtIds.add(item.id);
+    } else if (typeof item === 'number') {
+      // Legacy bare ID — shouldn't happen after migration, but handle gracefully
+      boughtIds.add(item);
+    }
+  }
+}
+
+// ── Persist selection to server ───────────────────────────────
+async function saveSelection() {
+  const arr = [...selectedIds];
+  await fetch('/api/selection', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(arr),
+  });
+  updateBottomBar();
+}
+
+async function saveBought() {
+  // Send enriched data to server
+  await fetch('/api/bought', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(boughtData),
+  });
+  document.getElementById('boughtCount').textContent = boughtIds.size;
+}
+
+// ── Accent-insensitive normalization ──────────────────────────
+function normalize(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+// ── Sorting: Device first, then On Sale, then Alphabetical ───
+function sortProducts(list) {
+  return list.sort((a, b) => {
+    const aProj = a.id === PROJECTOR_ID ? 0 : 1;
+    const bProj = b.id === PROJECTOR_ID ? 0 : 1;
+    if (aProj !== bProj) return aProj - bProj;
+
+    const aSale = a.compareAtPrice ? 0 : 1;
+    const bSale = b.compareAtPrice ? 0 : 1;
+    if (aSale !== bSale) return aSale - bSale;
+
+    return normalize(a.title).localeCompare(normalize(b.title), 'hu');
+  });
+}
+
+// ── Get product for rendering (from products.json or bought snapshot) ─
+function getProductForRender(id) {
+  const prod = products.find(p => p.id === id);
+  if (prod) return prod;
+  // Fallback to bought snapshot if product disappeared
+  const bought = boughtMap.get(id);
+  if (bought) return { ...bought.product, _discontinued: true };
+  return null;
+}
+
+// ── Price history for a product ───────────────────────────────
+function getPriceHistory(id) {
+  return priceHistory.filter(e => e.id === id).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// ── Rendering ─────────────────────────────────────────────────
+function renderProducts() {
+  const list = document.getElementById('productList');
+  const searchTerm = normalize(document.getElementById('search').value);
+
+  // Build list: products.json + any bought items not in products (discontinued)
+  let renderList = [...products];
+  for (const [id, bought] of boughtMap) {
+    if (!products.find(p => p.id === id)) {
+      renderList.push({ ...bought.product, _discontinued: true });
+    }
+  }
+
+  let filtered = sortProducts(renderList);
+
+  // Filter by search (accent-insensitive)
+  if (searchTerm) {
+    filtered = filtered.filter(p =>
+      normalize(p.title).includes(searchTerm) ||
+      (p.tags || []).some(t => normalize(t).includes(searchTerm))
+    );
+  }
+
+  // Filter by tab
+  if (currentFilter === 'selected') {
+    filtered = filtered.filter(p => selectedIds.has(p.id));
+  } else if (currentFilter === 'bought') {
+    filtered = filtered.filter(p => boughtIds.has(p.id));
+  } else if (currentFilter === 'sale') {
+    filtered = filtered.filter(p => p.compareAtPrice);
+  }
+
+  // Hide bought by default (except when in bought/sale filter)
+  if (hideBought && currentFilter === 'all' && !searchTerm) {
+    filtered = filtered.filter(p => !boughtIds.has(p.id));
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state">Nincs találat 🎞️</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(p => {
+    const selected = selectedIds.has(p.id);
+    const bought = boughtIds.has(p.id);
+    const onSale = !!p.compareAtPrice;
+    const discontinued = p._discontinued;
+    const classes = ['product-card'];
+    if (selected) classes.push('selected');
+    if (bought) classes.push('bought');
+    if (onSale) classes.push('on-sale');
+
+    // Price HTML
+    let priceHtml = onSale
+      ? `<span class="product-price compare">${p.compareAtPrice.toLocaleString('hu')} Ft</span>
+         <span class="product-price">${p.price.toLocaleString('hu')} Ft</span>
+         <span class="sale-badge">-${Math.round((1 - p.price/p.compareAtPrice)*100)}%</span>`
+      : `<span class="product-price">${p.price.toLocaleString('hu')} Ft</span>`;
+
+    // Bought info: price paid + date
+    let boughtInfo = '';
+    if (bought) {
+      const b = boughtMap.get(p.id);
+      if (b && b.product) {
+        const paidPrice = b.product.price;
+        const boughtDate = b.boughtAt ? new Date(b.boughtAt).toLocaleDateString('hu-HU') : '';
+        let priceDiff = '';
+        if (!discontinued && paidPrice !== p.price) {
+          const diff = p.price - paidPrice;
+          const arrow = diff < 0 ? '↓' : '↑';
+          const color = diff < 0 ? 'var(--red)' : 'var(--green)';
+          priceDiff = ` · <span style="color:${color};font-size:11px">Most: ${p.price.toLocaleString('hu')} Ft ${arrow}</span>`;
+        }
+        boughtInfo = `<div style="font-size:11px;color:var(--green);margin-top:2px">✓ ${paidPrice.toLocaleString('hu')} Ft${boughtDate ? ' (' + boughtDate + ')' : ''}${priceDiff}</div>`;
+      }
+    }
+
+    // Discontinued badge
+    let discontinuedBadge = discontinued
+      ? ' <span style="font-size:10px;background:var(--text-dim);color:#fff;padding:2px 6px;border-radius:4px">Nem elérhető</span>'
+      : '';
+
+    // Price history icon
+    const hist = getPriceHistory(p.id);
+    let historyIcon = '';
+    if (hist.length > 1) {
+      historyIcon = `<span class="history-icon" onclick="event.preventDefault();event.stopPropagation();showPriceHistory(${p.id})" title="Ártörténet">📈</span>`;
+    }
+
+    const tagsHtml = p.tags && p.tags.length > 0
+      ? `<div class="product-tags">${p.tags.slice(0,4).join(' · ')}</div>`
+      : '';
+
+    const linkHref = discontinued ? '#' : p.url;
+    const linkAttrs = discontinued ? '' : 'target="_blank" rel="noopener"';
+
+    return `
+      <div class="${classes.join(' ')}">
+        <div class="select-box ${selected ? 'checked' : ''}" onclick="event.stopPropagation(); toggleSelect(${p.id})"></div>
+        <a class="product-link" href="${linkHref}" ${linkAttrs}>
+          <img class="product-img" src="${p.imageUrl || ''}" alt="${p.title}" loading="lazy"
+               onerror="this.style.display='none'">
+          <div class="product-info">
+            <div class="product-title">${p.title} ${discontinuedBadge}${historyIcon}</div>
+            <div class="product-meta">${priceHtml}</div>
+            ${boughtInfo}
+            ${tagsHtml}
+          </div>
+        </a>
+      </div>`;
+  }).join('');
+
+  updateBottomBar();
+}
+
+// ── Price history popup ───────────────────────────────────────
+function showPriceHistory(id) {
+  const hist = getPriceHistory(id);
+  if (hist.length === 0) return;
+
+  const prod = products.find(p => p.id === id) || boughtMap.get(id)?.product;
+  const title = prod?.title || 'Ismeretlen';
+
+  // Build simple text-based history
+  let html = `<div style="margin-bottom:12px"><strong>${title}</strong></div>`;
+  html += '<div class="order-list">';
+  for (const e of hist) {
+    const priceStr = e.price.toLocaleString('hu') + ' Ft';
+    const compareStr = e.compareAtPrice ? ` (volt: ${e.compareAtPrice.toLocaleString('hu')} Ft)` : '';
+    const saleBadge = e.compareAtPrice ? ' <span class="sale-badge">akció</span>' : '';
+    html += `<div class="order-list-item">
+      <span>${e.date}${saleBadge}</span>
+      <span style="color:var(--price)">${priceStr}${compareStr}</span>
+    </div>`;
+  }
+  html += '</div>';
+
+  // Use the remove-bought modal structure for reuse
+  const modal = document.getElementById('priceHistoryModal');
+  document.getElementById('priceHistoryContent').innerHTML = html;
+  modal.classList.add('show');
+}
+
+function closePriceHistory() {
+  document.getElementById('priceHistoryModal').classList.remove('show');
+}
+
+// ── Toggle selection ──────────────────────────────────────────
+function toggleSelect(id) {
+  if (selectedIds.has(id)) { selectedIds.delete(id); }
+  else { selectedIds.add(id); }
+  saveSelection();
+  renderProducts();
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  saveSelection();
+  renderProducts();
+}
+
+// ── Bottom bar ────────────────────────────────────────────────
+function updateBottomBar() {
+  const selectedProducts = products.filter(p => selectedIds.has(p.id));
+  const count = selectedProducts.length;
+  const total = selectedProducts.reduce((sum, p) => sum + p.price, 0);
+  document.getElementById('barCount').textContent = count;
+  document.getElementById('barTotal').textContent = `${total.toLocaleString('hu')} Ft`;
+  document.getElementById('selectedCount').textContent = count;
+  document.getElementById('orderBtn').disabled = count === 0;
+
+  // Show "Eltávolít" button if any selected items are also bought
+  const selectedBought = selectedProducts.filter(p => boughtIds.has(p.id));
+  document.getElementById('removeBoughtBtn').style.display = selectedBought.length > 0 ? 'block' : 'none';
+}
+
+// ── Remove from bought (un-buy) ───────────────────────────────
+function showRemoveBoughtModal() {
+  const selectedBought = products.filter(p => selectedIds.has(p.id) && boughtIds.has(p.id));
+  // Also check bought snapshots for discontinued items
+  const selectedBoughtAll = [...selectedIds].filter(id => boughtIds.has(id)).map(id => {
+    const p = products.find(pr => pr.id === id);
+    const b = boughtMap.get(id);
+    return { id, title: p?.title || b?.product?.title || 'Ismeretlen', boughtAt: b?.boughtAt };
+  });
+  if (selectedBoughtAll.length === 0) return;
+
+  document.getElementById('removeBoughtSummary').textContent =
+    `${selectedBoughtAll.length} diafilm eltávolítása a gyűjteményből`;
+  document.getElementById('removeBoughtList').innerHTML = selectedBoughtAll.map(p => `
+    <div class="order-list-item">
+      <span>${p.title}</span>
+      <span style="color:var(--green)">✓ megvásárolva</span>
+    </div>`).join('');
+  document.getElementById('removeBoughtError').style.display = 'none';
+  document.getElementById('removeBoughtModal').classList.add('show');
+}
+
+function closeRemoveBoughtModal() {
+  document.getElementById('removeBoughtModal').classList.remove('show');
+}
+
+async function confirmRemoveBought() {
+  // Remove from bought data
+  const toRemove = [...selectedIds].filter(id => boughtIds.has(id));
+  boughtData = boughtData.filter(item => {
+    const itemId = typeof item === 'object' ? item.id : item;
+    return !toRemove.includes(itemId);
+  });
+  setBoughtData(boughtData);
+  await saveBought();
+  // Clear the selection of the removed items
+  toRemove.forEach(id => selectedIds.delete(id));
+  await saveSelection();
+  closeRemoveBoughtModal();
+  renderProducts();
+}
+
+// ── Copy order list for iMessage ──────────────────────────────
+async function copyOrderList() {
+  const selectedProducts = products.filter(p => selectedIds.has(p.id));
+  if (selectedProducts.length === 0) return;
+
+  const total = selectedProducts.reduce((sum, p) => sum + p.price, 0);
+
+  let text = '🎬 Diafilm rendelés\n\n';
+  selectedProducts.forEach((p, i) => {
+    text += `${i + 1}. ${p.title} — ${p.price.toLocaleString('hu')} Ft\n`;
+  });
+  text += `\nÖsszesen: ${total.toLocaleString('hu')} Ft (${selectedProducts.length} db)`;
+
+  const btn = document.getElementById('copyBtn');
+  const flash = () => { btn.textContent = '✅ Másolva!'; setTimeout(() => { btn.textContent = '📋 Másolás'; }, 2000); };
+
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.writeText(text);
+      flash();
+      return;
+    }
+  } catch (e) {}
+
+  // Fallback for HTTP (non-secure context)
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  flash();
+}
+
+// ── Order modal ───────────────────────────────────────────────
+function showOrderModal() {
+  const selectedProducts = products.filter(p => selectedIds.has(p.id));
+  const total = selectedProducts.reduce((sum, p) => sum + p.price, 0);
+  document.getElementById('orderSummary').textContent =
+    `${selectedProducts.length} diafilm · Összesen ${total.toLocaleString('hu')} Ft`;
+  document.getElementById('orderList').innerHTML = selectedProducts.map(p => `
+    <div class="order-list-item">
+      <span>${p.title}</span>
+      <span style="color:var(--price)">${p.price.toLocaleString('hu')} Ft</span>
+    </div>`).join('');
+
+  // Reset to step 1
+  document.getElementById('stepAssemble').style.display = 'block';
+  document.getElementById('stepCheckout').style.display = 'none';
+  document.getElementById('stepConfirmed').style.display = 'none';
+  document.getElementById('resultError').style.display = 'none';
+  document.getElementById('orderLoading').style.display = 'none';
+  document.getElementById('assembleButtons').style.display = 'flex';
+
+  document.getElementById('orderModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('orderModal').classList.remove('show');
+}
+
+// ── Submit order (assemble cart on diafilm.hu) ────────────────
+async function submitOrder() {
+  const selectedProducts = products.filter(p => selectedIds.has(p.id));
+  const variantIds = selectedProducts.map(p => p.variantId).filter(Boolean);
+  if (variantIds.length === 0) { alert('Nincsenek rendelhető tételek!'); return; }
+
+  document.getElementById('assembleButtons').style.display = 'none';
+  document.getElementById('orderLoading').style.display = 'block';
+  document.getElementById('resultError').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ variantIds }),
+    });
+    const data = await res.json();
+    document.getElementById('orderLoading').style.display = 'none';
+
+    if (data.ok) {
+      // Move to step 2 — selection stays intact until user confirms
+      document.getElementById('checkoutLink').href = data.checkoutUrl;
+      document.getElementById('stepAssemble').style.display = 'none';
+      document.getElementById('stepCheckout').style.display = 'block';
+    } else {
+      document.getElementById('resultError').textContent = `❌ Hiba: ${data.error}`;
+      document.getElementById('resultError').style.display = 'block';
+      document.getElementById('assembleButtons').style.display = 'flex';
+    }
+  } catch (e) {
+    document.getElementById('orderLoading').style.display = 'none';
+    document.getElementById('resultError').textContent = `❌ Hiba: ${e.message}`;
+    document.getElementById('resultError').style.display = 'block';
+    document.getElementById('assembleButtons').style.display = 'flex';
+  }
+}
+
+// ── User confirms order was completed ─────────────────────────
+async function confirmOrder() {
+  const selectedProducts = products.filter(p => selectedIds.has(p.id));
+  const now = new Date().toISOString();
+
+  // Build snapshots
+  const newBoughtEntries = selectedProducts.map(p => ({
+    id: p.id,
+    boughtAt: now,
+    product: {
+      id: p.id, title: p.title, handle: p.handle, url: p.url,
+      variantId: p.variantId, price: p.price, compareAtPrice: p.compareAtPrice,
+      tags: p.tags, vendor: p.vendor, imageUrl: p.imageUrl,
+    },
+  }));
+
+  // Merge with existing bought data (avoid duplicates)
+  const existingIds = new Set(boughtData.map(b => typeof b === 'object' ? b.id : b));
+  for (const entry of newBoughtEntries) {
+    if (!existingIds.has(entry.id)) {
+      boughtData.push(entry);
+    }
+  }
+  setBoughtData(boughtData);
+  await saveBought();
+
+  selectedIds.clear();
+  await saveSelection();
+
+  document.getElementById('stepCheckout').style.display = 'none';
+  document.getElementById('stepConfirmed').style.display = 'block';
+  renderProducts();
+}
+
+// ── User cancels — selection stays, nothing marked bought ─────
+function cancelOrder() {
+  closeModal();
+}
+
+// ── Filters ───────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filter = btn.dataset.filter;
+    if (filter === 'hideBought') {
+      hideBought = !hideBought;
+      btn.classList.toggle('active');
+      renderProducts();
+    } else {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn[data-filter]').forEach(b => {
+        if (b.dataset.filter !== 'hideBought') b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      renderProducts();
+    }
+  });
+});
+
+// ── Search ─────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', () => {
+  clearTimeout(window.searchTimer);
+  window.searchTimer = setTimeout(renderProducts, 150);
+});
+
+// ── Init ───────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

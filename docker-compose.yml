@@ -1,0 +1,39 @@
+services:
+  backend:
+    build: ./backend
+    container_name: diafilm-backend
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    environment:
+      - DATA_DIR=/data
+      - PORT=3001
+    networks:
+      - diafilm-net
+
+  frontend:
+    build: ./frontend
+    container_name: diafilm-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - diafilm-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: diafilm-nginx
+    ports:
+      - "19829:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - diafilm-net
+
+networks:
+  diafilm-net:
+    driver: bridge

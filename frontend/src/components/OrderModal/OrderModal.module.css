@@ -1,0 +1,119 @@
+.summary {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.orderList {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.orderListItem {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-between;
+}
+
+.price {
+  color: var(--price);
+}
+
+.btnGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btnPrimary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btnSecondary {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--card-border);
+}
+
+.errorBox {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+.successBox {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  background: rgba(0, 184, 148, 0.15);
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+
+.hint {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.checkoutLink {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 20px;
+  background: var(--green);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.loadingBox {
+  text-align: center;
+  padding: 20px;
+}
+
+.loadingText {
+  margin-top: 8px;
+  color: var(--text-dim);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--card-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
