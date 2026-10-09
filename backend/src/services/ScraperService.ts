@@ -103,9 +103,8 @@ export class ScraperService {
       await this.productRepo.saveAll(products);
       result.scraped = true;
       result.productCount = products.length;
-      // Log all as initial price history
-      const priceChanges = await this.updatePriceHistory([], products);
-      result.priceChanges = priceChanges;
+      // First scrape — no price history to build (no previous prices to compare)
+      result.priceChanges = 0;
       return result;
     }
 
@@ -161,15 +160,9 @@ export class ScraperService {
       }
 
       if (refPrice === null) {
-        // First time seeing this product — log it
-        history.push({
-          id: pid,
-          title: newP.title,
-          price: newP.price,
-          compareAtPrice: newP.compareAtPrice,
-          date: today,
-        });
-        changes++;
+        // New product — not in old scrape, not in price history.
+        // This is a new arrival, not a price change. Skip it.
+        continue;
       } else if (refPrice !== newP.price || refCompare !== newP.compareAtPrice) {
         history.push({
           id: pid,

@@ -155,8 +155,8 @@ describe('ScraperService', () => {
 
     expect(result.scraped).toBe(true);
     expect(result.productCount).toBe(1);
-    // First scrape logs all as initial price history
-    expect(result.priceChanges).toBe(1);
+    // First scrape does not log price history (no previous prices to compare)
+    expect(result.priceChanges).toBe(0);
   });
 
   it('maybeRescrape does not scrape when products.json is fresh', async () => {
@@ -240,6 +240,29 @@ describe('ScraperService', () => {
 
     const changes = await scraper.updatePriceHistory(oldProducts, newProducts);
     expect(changes).toBe(0);
+  });
+
+  it('updatePriceHistory does not log new products (not price changes)', async () => {
+    const productRepo = new JsonProductRepository(path.join(tmpDir, 'products.json'));
+    const priceHistoryRepo = new JsonPriceHistoryRepository(path.join(tmpDir, 'price_history.json'));
+    const disappearedRepo = new JsonDisappearedRepository(path.join(tmpDir, 'products_seen.json'));
+
+    const scraper = new ScraperService(productRepo, priceHistoryRepo, disappearedRepo, mockFetch([]));
+
+    // Old scrape has 1 product, new scrape has the same product + 1 new product
+    const oldProducts = [
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null },
+    ];
+    const newProducts = [
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null },
+      { id: 2, title: 'B (new)', handle: 'b', url: '', variantId: 20, price: 200, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null },
+    ];
+
+    const changes = await scraper.updatePriceHistory(oldProducts, newProducts);
+    expect(changes).toBe(0);
+
+    const history = await priceHistoryRepo.getAll();
+    expect(history).toHaveLength(0);
   });
 
   it('checkDisappeared logs products gone from scrape', async () => {
