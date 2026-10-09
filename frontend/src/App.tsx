@@ -245,6 +245,7 @@ function AppContent() {
           hideBought={hideBought}
           selectedCount={selectedIds.size}
           boughtCount={boughtIds.size}
+          filteredProducts={filteredProducts}
           onFilterChange={setFilter}
           onToggleHideBought={toggleHideBought}
         />

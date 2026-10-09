@@ -62,6 +62,30 @@ async function main() {
     fastify.log.error(err);
     process.exit(1);
   }
+
+  // Schedule periodic re-scrape (every 24h)
+  const RESCRAPE_INTERVAL_MS = config.rescrapeMaxAgeSeconds * 1000;
+  setInterval(async () => {
+    console.log('⏰ Periodic re-scrape check...');
+    try {
+      const result = await scraper.maybeRescrape();
+      if (result.scraped) {
+        console.log(`📦 Re-scraped ${result.productCount} products.`);
+        if (result.priceChanges > 0) {
+          console.log(`📈 ${result.priceChanges} price change(s) logged.`);
+        }
+        if (result.disappearedCount > 0) {
+          console.log(`👻 ${result.disappearedCount} product(s) disappeared.`);
+        }
+      } else {
+        console.log(`📦 products.json is fresh enough (${result.productCount} products).`);
+      }
+    } catch (err) {
+      console.error(`⚠️ Periodic re-scrape failed: ${err}`);
+    }
+  }, RESCRAPE_INTERVAL_MS);
+
+  console.log(`⏰ Scheduled re-scrape every ${config.rescrapeMaxAgeSeconds / 3600}h.`);
 }
 
 main();
