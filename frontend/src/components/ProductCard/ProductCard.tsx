@@ -76,7 +76,7 @@ export function ProductCard({
             <div className={styles.productTitle}>
               {product.title}
               <span className={styles.discontinuedBadge}>Nem elérhető</span>
-              {priceHistoryCount > 1 && (
+              {priceHistoryCount >= 1 && (
                 <span
                   className={styles.historyIcon}
                   onClick={(e) => {
@@ -126,7 +126,7 @@ export function ProductCard({
             <div className={styles.productTitle}>
               {product.title}
               {onSale && <span className={styles.saleBadge}>Akció</span>}
-              {priceHistoryCount > 1 && (
+              {priceHistoryCount >= 1 && (
                 <span
                   className={styles.historyIcon}
                   onClick={(e) => {

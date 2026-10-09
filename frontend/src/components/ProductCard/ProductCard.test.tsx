@@ -131,13 +131,18 @@ describe('ProductCard', () => {
   });
 
   // Price history icon
-  it('renders price history icon when count > 1', () => {
+  it('renders price history icon when count >= 1', () => {
     render(<ProductCard product={makeProduct()} {...defaultProps} priceHistoryCount={3} />);
     expect(screen.getByTestId('history-icon')).toBeInTheDocument();
   });
 
-  it('does not render price history icon when count <= 1', () => {
+  it('renders price history icon when count is exactly 1', () => {
     render(<ProductCard product={makeProduct()} {...defaultProps} priceHistoryCount={1} />);
+    expect(screen.getByTestId('history-icon')).toBeInTheDocument();
+  });
+
+  it('does not render price history icon when count is 0', () => {
+    render(<ProductCard product={makeProduct()} {...defaultProps} priceHistoryCount={0} />);
     expect(screen.queryByTestId('history-icon')).not.toBeInTheDocument();
   });
 
