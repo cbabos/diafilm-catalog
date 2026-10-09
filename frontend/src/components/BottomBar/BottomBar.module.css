@@ -65,3 +65,13 @@
   background: var(--red);
   color: #fff;
 }
+
+.btnNotInterested {
+  background: #e17055;
+  color: #fff;
+}
+
+.btnRestore {
+  background: #00b894;
+  color: #fff;
+}

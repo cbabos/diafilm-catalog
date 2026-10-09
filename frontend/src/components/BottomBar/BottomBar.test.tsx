@@ -7,9 +7,13 @@ describe('BottomBar', () => {
     selectedCount: 0,
     selectedTotal: 0,
     hasBoughtInSelection: false,
+    hasMarkableSelection: false,
+    hasRestorableSelection: false,
     onClearSelection: vi.fn(),
     onOrder: vi.fn(),
     onRemoveBought: vi.fn(),
+    onMarkNotInterested: vi.fn(),
+    onRestore: vi.fn(),
   };
 
   it('renders selection count and total', () => {
@@ -86,5 +90,69 @@ describe('BottomBar', () => {
     );
     fireEvent.click(screen.getByTestId('remove-bought-btn'));
     expect(onRemoveBought).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides mark-not-interested button when hasMarkableSelection is false', () => {
+    render(<BottomBar {...defaultProps} hasMarkableSelection={false} />);
+    expect(screen.queryByTestId('mark-not-interested-btn')).not.toBeInTheDocument();
+  });
+
+  it('shows mark-not-interested button when hasMarkableSelection is true', () => {
+    render(
+      <BottomBar
+        {...defaultProps}
+        selectedCount={1}
+        selectedTotal={1000}
+        hasMarkableSelection={true}
+      />,
+    );
+    expect(screen.getByTestId('mark-not-interested-btn')).toBeInTheDocument();
+  });
+
+  it('calls onMarkNotInterested when mark button clicked', () => {
+    const onMarkNotInterested = vi.fn();
+    render(
+      <BottomBar
+        {...defaultProps}
+        selectedCount={1}
+        selectedTotal={1000}
+        hasMarkableSelection={true}
+        onMarkNotInterested={onMarkNotInterested}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('mark-not-interested-btn'));
+    expect(onMarkNotInterested).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides restore button when hasRestorableSelection is false', () => {
+    render(<BottomBar {...defaultProps} hasRestorableSelection={false} />);
+    expect(screen.queryByTestId('restore-btn')).not.toBeInTheDocument();
+  });
+
+  it('shows restore button when hasRestorableSelection is true', () => {
+    render(
+      <BottomBar
+        {...defaultProps}
+        selectedCount={1}
+        selectedTotal={1000}
+        hasRestorableSelection={true}
+      />,
+    );
+    expect(screen.getByTestId('restore-btn')).toBeInTheDocument();
+  });
+
+  it('calls onRestore when restore button clicked', () => {
+    const onRestore = vi.fn();
+    render(
+      <BottomBar
+        {...defaultProps}
+        selectedCount={1}
+        selectedTotal={1000}
+        hasRestorableSelection={true}
+        onRestore={onRestore}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('restore-btn'));
+    expect(onRestore).toHaveBeenCalledTimes(1);
   });
 });

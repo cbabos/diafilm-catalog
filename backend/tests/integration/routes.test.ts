@@ -166,6 +166,64 @@ describe('Integration: Selection routes', () => {
   });
 });
 
+describe('Integration: Not-interested routes', () => {
+  it('GET /api/not-interested returns empty array initially', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/not-interested' });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual([]);
+  });
+
+  it('POST /api/not-interested saves and GET retrieves', async () => {
+    const postRes = await app.inject({
+      method: 'POST',
+      url: '/api/not-interested',
+      payload: [10, 20, 30],
+    });
+    expect(postRes.statusCode).toBe(200);
+    expect(postRes.json()).toEqual({ ok: true, count: 3 });
+
+    const getRes = await app.inject({ method: 'GET', url: '/api/not-interested' });
+    expect(getRes.statusCode).toBe(200);
+    expect(getRes.json()).toEqual([10, 20, 30]);
+  });
+
+  it('POST /api/not-interested rejects non-array body', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/not-interested',
+      payload: { id: 1 },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('POST /api/not-interested rejects non-number elements', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/not-interested',
+      payload: [1, 'two', 3],
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('POST /api/not-interested replaces entire list', async () => {
+    // First save
+    await app.inject({
+      method: 'POST',
+      url: '/api/not-interested',
+      payload: [1, 2, 3],
+    });
+    // Replace with different list
+    await app.inject({
+      method: 'POST',
+      url: '/api/not-interested',
+      payload: [4, 5],
+    });
+
+    const res = await app.inject({ method: 'GET', url: '/api/not-interested' });
+    expect(res.json()).toEqual([4, 5]);
+  });
+});
+
 describe('Integration: Price history routes', () => {
   it('GET /api/price-history returns empty array initially', async () => {
     const res = await app.inject({ method: 'GET', url: '/api/price-history' });

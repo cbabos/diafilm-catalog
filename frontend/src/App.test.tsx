@@ -62,6 +62,8 @@ const mockBought: BoughtItem[] = [
 
 const mockSelection: number[] = [1];
 
+const mockNotInterested: number[] = [];
+
 const mockPriceHistory: PriceHistoryEntry[] = [
   { id: 1, title: 'Árvíztűrő kaland', price: 2000, compareAtPrice: null, date: '2024-01-01' },
   { id: 1, title: 'Árvíztűrő kaland', price: 1690, compareAtPrice: 2000, date: '2024-02-01' },
@@ -88,6 +90,12 @@ const fetchHandler = (url: string, options?: RequestInit): Promise<Response> => 
       responseData = body;
     } else {
       responseData = mockSelection;
+    }
+  } else if (url === '/api/not-interested') {
+    if (options?.method === 'POST') {
+      responseData = { ok: true, count: (body as number[]).length };
+    } else {
+      responseData = mockNotInterested;
     }
   } else if (url === '/api/price-history') {
     responseData = mockPriceHistory;

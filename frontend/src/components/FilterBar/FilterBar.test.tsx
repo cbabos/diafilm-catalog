@@ -31,6 +31,7 @@ describe('FilterBar', () => {
     hideBought: true,
     selectedCount: 3,
     boughtCount: 5,
+    notInterestedCount: 2,
     filteredProducts,
     onFilterChange: vi.fn(),
     onToggleHideBought: vi.fn(),
@@ -42,6 +43,7 @@ describe('FilterBar', () => {
     expect(screen.getByText('Akciós')).toBeInTheDocument();
     expect(screen.getByText('Kijelölt (3)')).toBeInTheDocument();
     expect(screen.getByText('Megvett (5)')).toBeInTheDocument();
+    expect(screen.getByText('Nem érdekel (2)')).toBeInTheDocument();
     expect(screen.getByText('Elrejti vásároltakat')).toBeInTheDocument();
   });
 

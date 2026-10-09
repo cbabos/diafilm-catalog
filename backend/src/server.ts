@@ -4,6 +4,7 @@ import { dataPlugin, type DataPluginOptions } from './plugins/dataPlugin.js';
 import { productsRoutes } from './routes/products.js';
 import { boughtRoutes } from './routes/bought.js';
 import { selectionRoutes } from './routes/selection.js';
+import { notInterestedRoutes } from './routes/notInterested.js';
 import { priceHistoryRoutes } from './routes/priceHistory.js';
 import { disappearedRoutes } from './routes/disappeared.js';
 import { orderRoutes } from './routes/order.js';
@@ -31,6 +32,7 @@ export async function buildServer(options: ServerOptions = {}): Promise<FastifyI
   await fastify.register(productsRoutes);
   await fastify.register(boughtRoutes);
   await fastify.register(selectionRoutes);
+  await fastify.register(notInterestedRoutes);
   await fastify.register(priceHistoryRoutes);
   await fastify.register(disappearedRoutes);
   await fastify.register(orderRoutes);

@@ -5,6 +5,7 @@ import os from 'node:os';
 import { JsonProductRepository } from '../../src/repositories/ProductRepository.js';
 import { JsonBoughtRepository } from '../../src/repositories/BoughtRepository.js';
 import { JsonSelectionRepository } from '../../src/repositories/SelectionRepository.js';
+import { JsonNotInterestedRepository } from '../../src/repositories/NotInterestedRepository.js';
 import { JsonPriceHistoryRepository } from '../../src/repositories/PriceHistoryRepository.js';
 import { JsonDisappearedRepository } from '../../src/repositories/DisappearedRepository.js';
 import type { Product, BoughtItem, PriceHistoryEntry, DisappearedProduct } from '../../src/types.js';
@@ -212,6 +213,48 @@ describe('JsonSelectionRepository', () => {
     await repo.saveAll([1, 2]);
     await repo.toggle(1);
     expect(await repo.getAll()).toEqual([2]);
+  });
+});
+
+describe('JsonNotInterestedRepository', () => {
+  it('returns empty array when file does not exist', async () => {
+    const repo = new JsonNotInterestedRepository(tmpFile('not_interested.json'));
+    expect(await repo.getAll()).toEqual([]);
+  });
+
+  it('saves and retrieves ids', async () => {
+    const repo = new JsonNotInterestedRepository(tmpFile('not_interested.json'));
+    await repo.saveAll([1, 2, 3]);
+    expect(await repo.getAll()).toEqual([1, 2, 3]);
+  });
+
+  it('deduplicates on save', async () => {
+    const repo = new JsonNotInterestedRepository(tmpFile('not_interested.json'));
+    await repo.saveAll([1, 1, 2, 2, 3]);
+    expect(await repo.getAll()).toEqual([1, 2, 3]);
+  });
+
+  it('has returns true for existing id', async () => {
+    const repo = new JsonNotInterestedRepository(tmpFile('not_interested.json'));
+    await repo.saveAll([1, 2, 3]);
+    expect(await repo.has(2)).toBe(true);
+  });
+
+  it('has returns false for missing id', async () => {
+    const repo = new JsonNotInterestedRepository(tmpFile('not_interested.json'));
+    await repo.saveAll([1, 2, 3]);
+    expect(await repo.has(999)).toBe(false);
+  });
+
+  it('has returns false when file does not exist', async () => {
+    const repo = new JsonNotInterestedRepository(tmpFile('not_interested.json'));
+    expect(await repo.has(1)).toBe(false);
+  });
+
+  it('ensures file exists', () => {
+    const repo = new JsonNotInterestedRepository(tmpFile('not_interested.json'));
+    repo.ensureFile();
+    expect(fs.existsSync(tmpFile('not_interested.json'))).toBe(true);
   });
 });
 

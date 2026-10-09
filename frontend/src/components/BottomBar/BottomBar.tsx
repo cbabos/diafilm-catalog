@@ -5,18 +5,26 @@ interface BottomBarProps {
   selectedCount: number;
   selectedTotal: number;
   hasBoughtInSelection: boolean;
+  hasMarkableSelection: boolean;
+  hasRestorableSelection: boolean;
   onClearSelection: () => void;
   onOrder: () => void;
   onRemoveBought: () => void;
+  onMarkNotInterested: () => void;
+  onRestore: () => void;
 }
 
 export function BottomBar({
   selectedCount,
   selectedTotal,
   hasBoughtInSelection,
+  hasMarkableSelection,
+  hasRestorableSelection,
   onClearSelection,
   onOrder,
   onRemoveBought,
+  onMarkNotInterested,
+  onRestore,
 }: BottomBarProps) {
   return (
     <div className={styles.bottomBar}>
@@ -38,6 +46,24 @@ export function BottomBar({
           data-testid="remove-bought-btn"
         >
           Eltávolít
+        </button>
+      )}
+      {hasMarkableSelection && (
+        <button
+          className={`${styles.btn} ${styles.btnNotInterested}`}
+          onClick={onMarkNotInterested}
+          data-testid="mark-not-interested-btn"
+        >
+          Nem érdekel
+        </button>
+      )}
+      {hasRestorableSelection && (
+        <button
+          className={`${styles.btn} ${styles.btnRestore}`}
+          onClick={onRestore}
+          data-testid="restore-btn"
+        >
+          Visszaállít
         </button>
       )}
       <button

@@ -11,6 +11,7 @@ import { PriceHistoryModal } from './components/PriceHistoryModal/PriceHistoryMo
 import { useProducts } from './api/products';
 import { useBought, useUpdateBought } from './api/bought';
 import { useSelection, useUpdateSelection } from './api/selection';
+import { useNotInterested, useUpdateNotInterested } from './api/notInterested';
 import { usePriceHistory, usePriceHistoryForProduct } from './api/priceHistory';
 import { useAssembleCart } from './api/order';
 import { useUIStore } from './store/uiStore';
@@ -33,9 +34,11 @@ function AppContent() {
   const { data: products = [], isLoading: productsLoading, error: productsError } = useProducts();
   const { data: bought = [] } = useBought();
   const { data: selectionArray = [] } = useSelection();
+  const { data: notInterestedArray = [] } = useNotInterested();
   const { data: priceHistory = [] } = usePriceHistory();
   const updateBought = useUpdateBought();
   const updateSelection = useUpdateSelection();
+  const updateNotInterested = useUpdateNotInterested();
   const assembleCart = useAssembleCart();
 
   // Local UI state (Zustand)
@@ -68,6 +71,8 @@ function AppContent() {
   const boughtIds = useMemo(() => new Set(boughtMap.keys()), [boughtMap]);
 
   const selectedIds = useMemo(() => new Set(selectionArray), [selectionArray]);
+
+  const notInterestedIds = useMemo(() => new Set(notInterestedArray), [notInterestedArray]);
 
   const priceHistoryCounts = useMemo(() => {
     const counts = new Map<number, number>();
@@ -105,6 +110,8 @@ function AppContent() {
       filtered = filtered.filter((p) => boughtIds.has(p.id));
     } else if (filter === 'sale') {
       filtered = filtered.filter((p) => p.compareAtPrice != null && p.compareAtPrice > 0);
+    } else if (filter === 'not-interested') {
+      filtered = filtered.filter((p) => notInterestedIds.has(p.id));
     }
 
     // Hide bought by default (except when in bought filter or searching)
@@ -112,8 +119,13 @@ function AppContent() {
       filtered = filtered.filter((p) => !boughtIds.has(p.id));
     }
 
+    // Hide not-interested items in "all" filter (always hidden, not controlled by toggle)
+    if (filter === 'all' && !term) {
+      filtered = filtered.filter((p) => !notInterestedIds.has(p.id));
+    }
+
     return filtered;
-  }, [renderList, debouncedSearch, filter, selectedIds, boughtIds, hideBought]);
+  }, [renderList, debouncedSearch, filter, selectedIds, boughtIds, notInterestedIds, hideBought]);
 
   // Selected products (for bottom bar + order modal)
   const selectedProducts = useMemo(() => {
@@ -133,6 +145,20 @@ function AppContent() {
   const boughtInSelection = useMemo(
     () => selectedProducts.filter((p) => boughtIds.has(p.id)),
     [selectedProducts, boughtIds],
+  );
+
+  // Items that can be marked as not-interested (not already bought, not already not-interested)
+  const hasMarkableSelection = useMemo(
+    () =>
+      filter !== 'not-interested' &&
+      selectedProducts.some((p) => !boughtIds.has(p.id) && !notInterestedIds.has(p.id)),
+    [filter, selectedProducts, boughtIds, notInterestedIds],
+  );
+
+  // In not-interested filter, selected items can be restored
+  const hasRestorableSelection = useMemo(
+    () => filter === 'not-interested' && selectedProducts.length > 0,
+    [filter, selectedProducts],
   );
 
   // ── Actions ──────────────────────────────────────────────────
@@ -217,6 +243,27 @@ function AppContent() {
     await updateSelection.mutateAsync(newSelection);
   }, [selectedIds, boughtIds, bought, updateBought, updateSelection]);
 
+  // Mark selected items as not-interested
+  const handleMarkNotInterested = useCallback(async () => {
+    const idsToAdd = [...selectedIds].filter(
+      (id) => !boughtIds.has(id) && !notInterestedIds.has(id),
+    );
+    const newNotInterested = [...new Set([...notInterestedArray, ...idsToAdd])];
+    const newSelection = [...selectedIds].filter((id) => !idsToAdd.includes(id));
+
+    await updateNotInterested.mutateAsync(newNotInterested);
+    await updateSelection.mutateAsync(newSelection);
+  }, [selectedIds, boughtIds, notInterestedIds, notInterestedArray, updateNotInterested, updateSelection]);
+
+  // Restore items from not-interested
+  const handleRestoreFromNotInterested = useCallback(async () => {
+    const idsToRemove = new Set(selectedIds);
+    const newNotInterested = notInterestedArray.filter((id) => !idsToRemove.has(id));
+
+    await updateNotInterested.mutateAsync(newNotInterested);
+    await updateSelection.mutateAsync([]);
+  }, [selectedIds, notInterestedArray, updateNotInterested, updateSelection]);
+
   // Assemble cart
   const handleAssembleCart = useCallback(
     async (variantIds: number[]): Promise<OrderResponse> => {
@@ -245,6 +292,7 @@ function AppContent() {
           hideBought={hideBought}
           selectedCount={selectedIds.size}
           boughtCount={boughtIds.size}
+          notInterestedCount={notInterestedIds.size}
           filteredProducts={filteredProducts}
           onFilterChange={setFilter}
           onToggleHideBought={toggleHideBought}
@@ -266,9 +314,13 @@ function AppContent() {
         selectedCount={selectedIds.size}
         selectedTotal={selectedTotal}
         hasBoughtInSelection={hasBoughtInSelection}
+        hasMarkableSelection={hasMarkableSelection}
+        hasRestorableSelection={hasRestorableSelection}
         onClearSelection={handleClearSelection}
         onOrder={handleOrder}
         onRemoveBought={handleRemoveBought}
+        onMarkNotInterested={handleMarkNotInterested}
+        onRestore={handleRestoreFromNotInterested}
       />
 
       <OrderModal

@@ -51,7 +51,7 @@ export interface OrderRequest {
 
 // ── UI types ──────────────────────────────────────────────────────
 
-export type FilterType = 'all' | 'sale' | 'selected' | 'bought';
+export type FilterType = 'all' | 'sale' | 'selected' | 'bought' | 'not-interested';
 
 export type ModalType = 'order' | 'removeBought' | 'priceHistory' | null;
 

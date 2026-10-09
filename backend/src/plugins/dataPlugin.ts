@@ -6,6 +6,7 @@ import { JsonBoughtRepository } from '../repositories/BoughtRepository.js';
 import { JsonSelectionRepository } from '../repositories/SelectionRepository.js';
 import { JsonPriceHistoryRepository } from '../repositories/PriceHistoryRepository.js';
 import { JsonDisappearedRepository } from '../repositories/DisappearedRepository.js';
+import { JsonNotInterestedRepository } from '../repositories/NotInterestedRepository.js';
 
 export interface DataPluginOptions {
   dataDir?: string;
@@ -17,6 +18,7 @@ export interface Repositories {
   selection: JsonSelectionRepository;
   priceHistory: JsonPriceHistoryRepository;
   disappeared: JsonDisappearedRepository;
+  notInterested: JsonNotInterestedRepository;
 }
 
 declare module 'fastify' {
@@ -36,6 +38,7 @@ const dataPluginImpl: FastifyPluginCallback<DataPluginOptions> = (fastify, optio
     selection: new JsonSelectionRepository(file('selected.json')),
     priceHistory: new JsonPriceHistoryRepository(file('price_history.json')),
     disappeared: new JsonDisappearedRepository(file('products_seen.json')),
+    notInterested: new JsonNotInterestedRepository(file('not_interested.json')),
   };
 
   // Ensure all data files exist on startup
@@ -44,6 +47,7 @@ const dataPluginImpl: FastifyPluginCallback<DataPluginOptions> = (fastify, optio
   repos.selection.ensureFile();
   repos.priceHistory.ensureFile();
   repos.disappeared.ensureFile();
+  repos.notInterested.ensureFile();
 
   fastify.decorate('repos', repos);
   done();

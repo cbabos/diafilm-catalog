@@ -8,6 +8,7 @@ interface FilterBarProps {
   hideBought: boolean;
   selectedCount: number;
   boughtCount: number;
+  notInterestedCount: number;
   filteredProducts: RenderProduct[];
   onFilterChange: (filter: FilterType) => void;
   onToggleHideBought: () => void;
@@ -18,6 +19,7 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: 'sale', label: 'Akciós' },
   { key: 'selected', label: 'Kijelölt' },
   { key: 'bought', label: 'Megvett' },
+  { key: 'not-interested', label: 'Nem érdekel' },
 ];
 
 const FILTER_LABELS: Record<FilterType, string> = {
@@ -25,6 +27,7 @@ const FILTER_LABELS: Record<FilterType, string> = {
   sale: 'Akciós',
   selected: 'Kijelölt',
   bought: 'Megvett',
+  'not-interested': 'Nem érdekel',
 };
 
 export function FilterBar({
@@ -32,6 +35,7 @@ export function FilterBar({
   hideBought,
   selectedCount,
   boughtCount,
+  notInterestedCount,
   filteredProducts,
   onFilterChange,
   onToggleHideBought,
@@ -68,6 +72,7 @@ export function FilterBar({
         >
           {f.key === 'selected' && `Kijelölt (${selectedCount})`}
           {f.key === 'bought' && `Megvett (${boughtCount})`}
+          {f.key === 'not-interested' && `Nem érdekel (${notInterestedCount})`}
           {f.key === 'all' && 'Összes'}
           {f.key === 'sale' && 'Akciós'}
         </button>
