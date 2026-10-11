@@ -106,9 +106,10 @@ export function ProductCard({
             )}
             {product.ageGroups && product.ageGroups.length > 0 && (
               <div className={styles.ageGroups} data-testid="age-groups">
-                {product.ageGroups.map((age) => (
-                  <span key={age} className={styles.ageGroup}>{age}</span>
-                ))}
+                {product.ageGroups.map((age) => {
+                  const ageClass = age.includes('2') ? styles.age2 : age.includes('4') ? styles.age4 : age.includes('6') ? styles.age6 : styles.ageGroup;
+                  return <span key={age} className={`${styles.ageGroup} ${ageClass}`}>{age}</span>;
+                })}
               </div>
             )}
             {product.publishedAt && (
@@ -180,9 +181,10 @@ export function ProductCard({
             )}
             {product.ageGroups && product.ageGroups.length > 0 && (
               <div className={styles.ageGroups} data-testid="age-groups">
-                {product.ageGroups.map((age) => (
-                  <span key={age} className={styles.ageGroup}>{age}</span>
-                ))}
+                {product.ageGroups.map((age) => {
+                  const ageClass = age.includes('2') ? styles.age2 : age.includes('4') ? styles.age4 : age.includes('6') ? styles.age6 : styles.ageGroup;
+                  return <span key={age} className={`${styles.ageGroup} ${ageClass}`}>{age}</span>;
+                })}
               </div>
             )}
             {product.publishedAt && (

@@ -189,10 +189,22 @@
 
 .ageGroup {
   font-size: 10px;
-  background: #74b9ff;
-  color: #1a1a2e;
   padding: 2px 6px;
   border-radius: 4px;
   font-weight: 600;
-  white-space: nowrap;
+}
+
+.age2 {
+  background: #e17055;
+  color: #fff;
+}
+
+.age4 {
+  background: #74b9ff;
+  color: #1a1a2e;
+}
+
+.age6 {
+  background: #a29bfe;
+  color: #1a1a2e;
 }
