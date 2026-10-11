@@ -99,3 +99,33 @@
   color: var(--text);
   border-color: var(--accent);
 }
+
+.ageFilterGroup {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ageBtn {
+  padding: 4px 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.ageBtn:hover {
+  color: var(--text);
+  border-color: #74b9ff;
+}
+
+.ageActive {
+  background: #74b9ff;
+  border-color: #74b9ff;
+  color: #1a1a2e;
+  font-weight: 700;
+}

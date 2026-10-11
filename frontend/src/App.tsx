@@ -46,10 +46,12 @@ function AppContent() {
   const hideBought = useUIStore((s) => s.hideBought);
   const searchTerm = useUIStore((s) => s.searchTerm);
   const availableSince = useUIStore((s) => s.availableSince);
+  const ageFilter = useUIStore((s) => s.ageFilter);
   const setFilter = useUIStore((s) => s.setFilter);
   const toggleHideBought = useUIStore((s) => s.toggleHideBought);
   const setSearchTerm = useUIStore((s) => s.setSearchTerm);
   const setAvailableSince = useUIStore((s) => s.setAvailableSince);
+  const setAgeFilter = useUIStore((s) => s.setAgeFilter);
   const activeModal = useUIStore((s) => s.activeModal);
   const openModal = useUIStore((s) => s.openModal);
   const closeModal = useUIStore((s) => s.closeModal);
@@ -121,6 +123,11 @@ function AppContent() {
       filtered = filtered.filter((p) => p.publishedAt && p.publishedAt.slice(0, 10) >= availableSince);
     }
 
+    // Age filter: only show products matching the selected age group
+    if (ageFilter) {
+      filtered = filtered.filter((p) => p.ageGroups && p.ageGroups.includes(ageFilter));
+    }
+
     // Hide bought by default (except when in bought filter or searching)
     if (hideBought && filter === 'all' && !term) {
       filtered = filtered.filter((p) => !boughtIds.has(p.id));
@@ -132,7 +139,7 @@ function AppContent() {
     }
 
     return filtered;
-  }, [renderList, debouncedSearch, filter, selectedIds, boughtIds, notInterestedIds, hideBought, availableSince]);
+  }, [renderList, debouncedSearch, filter, selectedIds, boughtIds, notInterestedIds, hideBought, availableSince, ageFilter]);
 
   // Selected products (for bottom bar + order modal)
   const selectedProducts = useMemo(() => {
@@ -224,6 +231,7 @@ function AppContent() {
         available: p.available,
         createdAt: p.createdAt,
         publishedAt: p.publishedAt,
+        ageGroups: p.ageGroups ?? [],
       },
     }));
 
@@ -304,9 +312,11 @@ function AppContent() {
           notInterestedCount={notInterestedIds.size}
           filteredProducts={filteredProducts}
           availableSince={availableSince}
+          ageFilter={ageFilter}
           onFilterChange={setFilter}
           onToggleHideBought={toggleHideBought}
           onAvailableSinceChange={setAvailableSince}
+          onAgeFilterChange={setAgeFilter}
         />
       </Header>
 

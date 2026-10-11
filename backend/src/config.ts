@@ -18,6 +18,8 @@ export const config = {
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
   // Special product IDs
   projectorId: 8462548992273,
+  // Age groups (korosztály) used for enrichment scraping
+  ageGroups: ['2 éves kortól', '4 éves kortól', '6 éves kortól'],
 } as const;
 
 export function dataFilePath(filename: string): string {

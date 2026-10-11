@@ -23,6 +23,7 @@ const mockProducts: Product[] = [
     imageUrl: 'https://example.com/vetito.jpg',
     createdAt: '2026-09-01T00:00:00+02:00',
     publishedAt: '2026-09-01T00:00:00+02:00',
+    ageGroups: [],
   },
   {
     id: 1,
@@ -39,6 +40,7 @@ const mockProducts: Product[] = [
     imageUrl: 'https://example.com/1.jpg',
     createdAt: '2026-09-01T00:00:00+02:00',
     publishedAt: '2026-09-01T00:00:00+02:00',
+    ageGroups: ['2 éves kortól'],
   },
   {
     id: 2,
@@ -55,6 +57,7 @@ const mockProducts: Product[] = [
     imageUrl: 'https://example.com/2.jpg',
     createdAt: '2026-09-01T00:00:00+02:00',
     publishedAt: '2026-09-01T00:00:00+02:00',
+    ageGroups: ['4 éves kortól'],
   },
 ];
 
@@ -161,6 +164,7 @@ describe('App Integration', () => {
       searchTerm: '',
       debouncedSearch: '',
       availableSince: null,
+      ageFilter: null,
       activeModal: null,
       priceHistoryProductId: null,
     });

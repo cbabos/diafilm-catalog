@@ -78,6 +78,7 @@ export class ScraperService {
           imageUrl: images[0]?.src ?? null,
           createdAt: p.created_at ?? '',
           publishedAt: p.published_at ?? '',
+          ageGroups: [],
         });
       }
 
@@ -86,8 +87,97 @@ export class ScraperService {
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
+    // Enrich with age group data from collection page faceted filters
+    console.log('🔄 Enriching with age group data...');
+    try {
+      const ageMap = await this.scrapeAgeGroups();
+      console.log(`   Age map: ${ageMap.size} handles with age data`);
+      let enriched = 0;
+      for (const product of allProducts) {
+        const ages = ageMap.get(product.handle);
+        if (ages && ages.length > 0) {
+          product.ageGroups = ages;
+          enriched++;
+        }
+      }
+      console.log(`   Enriched ${enriched}/${allProducts.length} products with age groups`);
+    } catch (err) {
+      console.error(`   ⚠️ Age enrichment failed: ${err}`);
+    }
+
     // Sort by Hungarian accent-insensitive title
     return sortByTitle(allProducts, (p) => p.title);
+  }
+
+  /**
+   * Scrape age group (korosztály) data from collection page faceted filters.
+   * The age recommendation is stored in a custom metafield `korosztaly_szerint`
+   * that is NOT available via the products.json API — only via the collection
+   * page filter URLs.
+   *
+   * For each age group, paginates through the filtered collection pages,
+   * extracting product handles via regex. Builds a Map<handle, ageGroups[]>.
+   *
+   * Sleeps 1 second between each HTTP request to avoid 429 rate limit.
+   */
+  async scrapeAgeGroups(): Promise<Map<string, string[]>> {
+    const ageMap = new Map<string, string[]>();
+
+    for (const age of config.ageGroups) {
+      const encodedAge = encodeURIComponent(age);
+      let page = 1;
+      let totalForAge = 0;
+
+      while (true) {
+        const url = `${config.shopifyBase}/collections/osszes-diafilm?sort_by=title-ascending&page=${page}&filter.p.m.custom.korosztaly_szerint=${encodedAge}`;
+
+        const resp = await this.fetchFn(url, {
+          headers: {
+            'User-Agent': config.userAgent,
+            Accept: 'text/html,application/xhtml+xml',
+          },
+        });
+
+        if (!resp.ok) {
+          throw new Error(`Age group scrape error (age=${age}, page=${page}): HTTP ${resp.status}`);
+        }
+
+        const html = await resp.text();
+
+        // Extract product handles from the HTML
+        // Use [^"]+ to capture full URL including query params, then split on '?'
+        const handleRegex = /href="\/products\/([^"]+)"/g;
+        let newHandlesFound = 0;
+        let match: RegExpExecArray | null;
+
+        while ((match = handleRegex.exec(html)) !== null) {
+          const handle = match[1].split('?')[0]; // strip query params
+          if (!ageMap.has(handle)) {
+            ageMap.set(handle, []);
+          }
+          const ages = ageMap.get(handle)!;
+          if (!ages.includes(age)) {
+            ages.push(age);
+            newHandlesFound++;
+          }
+        }
+
+        // Stop when no new handles are found on this page
+        if (newHandlesFound === 0) {
+          break;
+        }
+
+        totalForAge += newHandlesFound;
+        page++;
+
+        // Sleep 1 second between each HTTP request to avoid 429
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      console.log(`   Age "${age}": ${totalForAge} handles`);
+    }
+
+    return ageMap;
   }
 
   /**

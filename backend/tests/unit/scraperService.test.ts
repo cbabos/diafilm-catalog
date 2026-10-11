@@ -39,6 +39,21 @@ function mockFetch(pages: { products: ShopifyProduct[] }[]): (url: string) => Pr
     const pageMatch = url.match(/page=(\d+)/);
     const page = pageMatch ? parseInt(pageMatch[1], 10) - 1 : 0;
 
+    // Age group collection page requests — return empty HTML so no handles found
+    if (url.includes('/collections/osszes-diafilm')) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ products: [] }),
+            headers: new Headers(),
+            text: () => Promise.resolve('<html><body>No products</body></html>'),
+          } as Response);
+        }, 10);
+      });
+    }
+
     // Simulate delay
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -124,6 +139,7 @@ describe('ScraperService', () => {
       imageUrl: 'https://cdn.shopify.com/test.jpg',
       createdAt: '2026-09-01T00:00:00+02:00',
       publishedAt: '2026-09-01T00:00:00+02:00',
+      ageGroups: [],
     });
   });
 
@@ -174,7 +190,7 @@ describe('ScraperService', () => {
 
     // Pre-populate products.json
     await productRepo.saveAll([
-      { id: 1, title: 'Existing', handle: 'existing', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'Existing', handle: 'existing', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ]);
 
     const fetchFn = mockFetch([]);
@@ -192,7 +208,7 @@ describe('ScraperService', () => {
 
     // Pre-populate with old data
     await productRepo.saveAll([
-      { id: 1, title: 'Old', handle: 'old', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'Old', handle: 'old', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ]);
 
     // Make the file old (backdate mtime)
@@ -218,10 +234,10 @@ describe('ScraperService', () => {
     const scraper = new ScraperService(productRepo, priceHistoryRepo, disappearedRepo, mockFetch([]));
 
     const oldProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
     const newProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 150, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 150, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
 
     const changes = await scraper.updatePriceHistory(oldProducts, newProducts);
@@ -240,10 +256,10 @@ describe('ScraperService', () => {
     const scraper = new ScraperService(productRepo, priceHistoryRepo, disappearedRepo, mockFetch([]));
 
     const oldProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
     const newProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
 
     const changes = await scraper.updatePriceHistory(oldProducts, newProducts);
@@ -259,11 +275,11 @@ describe('ScraperService', () => {
 
     // Old scrape has 1 product, new scrape has the same product + 1 new product
     const oldProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
     const newProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
-      { id: 2, title: 'B (new)', handle: 'b', url: '', variantId: 20, price: 200, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
+      { id: 2, title: 'B (new)', handle: 'b', url: '', variantId: 20, price: 200, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
 
     const changes = await scraper.updatePriceHistory(oldProducts, newProducts);
@@ -281,11 +297,11 @@ describe('ScraperService', () => {
     const scraper = new ScraperService(productRepo, priceHistoryRepo, disappearedRepo, mockFetch([]));
 
     const oldProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
-      { id: 2, title: 'B', handle: 'b', url: '', variantId: 20, price: 200, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
+      { id: 2, title: 'B', handle: 'b', url: '', variantId: 20, price: 200, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
     const newProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
       // Product 2 disappeared
     ];
 
@@ -311,12 +327,123 @@ describe('ScraperService', () => {
     const scraper = new ScraperService(productRepo, priceHistoryRepo, disappearedRepo, mockFetch([]));
 
     const oldProducts = [
-      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
-      { id: 2, title: 'B', handle: 'b', url: '', variantId: 20, price: 200, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00' },
+      { id: 1, title: 'A', handle: 'a', url: '', variantId: 10, price: 100, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
+      { id: 2, title: 'B', handle: 'b', url: '', variantId: 20, price: 200, compareAtPrice: null, available: true, tags: [], productType: '', vendor: '', imageUrl: null, createdAt: '2026-09-01T00:00:00+02:00', publishedAt: '2026-09-01T00:00:00+02:00', ageGroups: [] },
     ];
     const newProducts = [oldProducts[0]];
 
     const gone = await scraper.checkDisappeared(oldProducts, newProducts);
     expect(gone).toBe(0); // Already logged
+  });
+
+  it('scrapeAgeGroups extracts handles from collection page HTML', async () => {
+    const productRepo = new JsonProductRepository(path.join(tmpDir, 'products.json'));
+    const priceHistoryRepo = new JsonPriceHistoryRepository(path.join(tmpDir, 'price_history.json'));
+    const disappearedRepo = new JsonDisappearedRepository(path.join(tmpDir, 'products_seen.json'));
+
+    // Mock fetch that returns HTML with product links for age group pages
+    const ageFetchFn = (url: string): Promise<Response> => {
+      if (url.includes('/collections/osszes-diafilm')) {
+        // Page 1 returns handles, page 2 returns empty (no new handles)
+        const pageMatch = url.match(/page=(\d+)/);
+        const page = pageMatch ? parseInt(pageMatch[1], 10) : 1;
+
+        let html = '';
+        if (page === 1) {
+          // Determine which age group from the URL
+          if (url.includes('2+%C3%A9ves+kort%C3%B3l') || url.includes('2%20%C3%A9ves')) {
+            html = '<a href="/products/alpha">A</a><a href="/products/beta">B</a>';
+          } else if (url.includes('4+%C3%A9ves+kort%C3%B3l') || url.includes('4%20%C3%A9ves')) {
+            html = '<a href="/products/beta">B</a><a href="/products/gamma">G</a>';
+          } else {
+            html = '<a href="/products/alpha">A</a>';
+          }
+        } else {
+          // Page 2: empty, no new handles
+          html = '<html><body>Empty</body></html>';
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({ products: [] }),
+          text: () => Promise.resolve(html),
+        } as Response);
+      }
+      // Non-collection URLs
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ products: [] }),
+        text: () => Promise.resolve('{}'),
+      } as Response);
+    };
+
+    const scraper = new ScraperService(productRepo, priceHistoryRepo, disappearedRepo, ageFetchFn);
+    const ageMap = await scraper.scrapeAgeGroups();
+
+    // alpha should be in 2é and 6é, beta in 2é and 4é, gamma in 4é
+    expect(ageMap.get('alpha')).toEqual(expect.arrayContaining(['2 éves kortól', '6 éves kortól']));
+    expect(ageMap.get('beta')).toEqual(expect.arrayContaining(['2 éves kortól', '4 éves kortól']));
+    expect(ageMap.get('gamma')).toEqual(['4 éves kortól']);
+  });
+
+  it('scrapeAll merges age groups into products', async () => {
+    const productRepo = new JsonProductRepository(path.join(tmpDir, 'products.json'));
+    const priceHistoryRepo = new JsonPriceHistoryRepository(path.join(tmpDir, 'price_history.json'));
+    const disappearedRepo = new JsonDisappearedRepository(path.join(tmpDir, 'products_seen.json'));
+
+    // Mock fetch: products.json returns 1 product, collection pages return handles
+    const mergeFetchFn = (url: string): Promise<Response> => {
+      if (url.includes('/collections/osszes-diafilm')) {
+        const pageMatch = url.match(/page=(\d+)/);
+        const page = pageMatch ? parseInt(pageMatch[1], 10) : 1;
+        let html = '';
+        if (page === 1) {
+          if (url.includes('2+%C3%A9ves+kort%C3%B3l') || url.includes('2%20%C3%A9ves')) {
+            html = '<a href="/products/alma">Alma</a>';
+          } else {
+            html = '<html><body>Empty</body></html>';
+          }
+        } else {
+          html = '<html><body>Empty</body></html>';
+        }
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({ products: [] }),
+          text: () => Promise.resolve(html),
+        } as Response);
+      }
+      // products.json
+      const pageMatch = url.match(/page=(\d+)/);
+      const page = pageMatch ? parseInt(pageMatch[1], 10) - 1 : 0;
+      if (page === 0) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          json: () => Promise.resolve({ products: [makeShopifyProduct(1, 'Alma')] }),
+          text: () => Promise.resolve('{}'),
+        } as Response);
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ products: [] }),
+        text: () => Promise.resolve('{}'),
+      } as Response);
+    };
+
+    const scraper = new ScraperService(productRepo, priceHistoryRepo, disappearedRepo, mergeFetchFn);
+    const products = await scraper.scrapeAll();
+
+    expect(products).toHaveLength(1);
+    expect(products[0].handle).toBe('alma');
+    expect(products[0].ageGroups).toEqual(['2 éves kortól']);
   });
 });

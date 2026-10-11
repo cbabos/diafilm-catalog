@@ -8,6 +8,7 @@ interface UIState {
   searchTerm: string;
   debouncedSearch: string;
   availableSince: string | null;
+  ageFilter: string | null;
 
   // Modal state
   activeModal: ModalType;
@@ -19,6 +20,7 @@ interface UIState {
   setSearchTerm: (term: string) => void;
   setDebouncedSearch: (term: string) => void;
   setAvailableSince: (date: string | null) => void;
+  setAgeFilter: (age: string | null) => void;
   openModal: (modal: ModalType) => void;
   closeModal: () => void;
   setPriceHistoryProductId: (id: number | null) => void;
@@ -30,6 +32,7 @@ export const useUIStore = create<UIState>((set) => ({
   searchTerm: '',
   debouncedSearch: '',
   availableSince: null,
+  ageFilter: null,
 
   activeModal: null,
   priceHistoryProductId: null,
@@ -39,6 +42,7 @@ export const useUIStore = create<UIState>((set) => ({
   setSearchTerm: (term) => set({ searchTerm: term }),
   setDebouncedSearch: (term) => set({ debouncedSearch: term }),
   setAvailableSince: (date) => set({ availableSince: date }),
+  setAgeFilter: (age) => set({ ageFilter: age }),
   openModal: (modal) => set({ activeModal: modal }),
   closeModal: () => set({ activeModal: null, priceHistoryProductId: null }),
   setPriceHistoryProductId: (id) => set({ priceHistoryProductId: id }),

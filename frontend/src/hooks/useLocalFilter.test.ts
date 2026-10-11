@@ -11,6 +11,8 @@ describe('useLocalFilter', () => {
       hideBought: true,
       searchTerm: '',
       debouncedSearch: '',
+      availableSince: null,
+      ageFilter: null,
       activeModal: null,
       priceHistoryProductId: null,
     });

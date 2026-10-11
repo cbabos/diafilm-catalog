@@ -104,6 +104,13 @@ export function ProductCard({
             {product.tags && product.tags.length > 0 && (
               <div className={styles.productTags}>{product.tags.slice(0, 4).join(' · ')}</div>
             )}
+            {product.ageGroups && product.ageGroups.length > 0 && (
+              <div className={styles.ageGroups} data-testid="age-groups">
+                {product.ageGroups.map((age) => (
+                  <span key={age} className={styles.ageGroup}>{age}</span>
+                ))}
+              </div>
+            )}
             {product.publishedAt && (
               <div className={styles.publishedDate}>
                 Elérhető: {formatDate(product.publishedAt)}
@@ -170,6 +177,13 @@ export function ProductCard({
             )}
             {product.tags && product.tags.length > 0 && (
               <div className={styles.productTags}>{product.tags.slice(0, 4).join(' · ')}</div>
+            )}
+            {product.ageGroups && product.ageGroups.length > 0 && (
+              <div className={styles.ageGroups} data-testid="age-groups">
+                {product.ageGroups.map((age) => (
+                  <span key={age} className={styles.ageGroup}>{age}</span>
+                ))}
+              </div>
             )}
             {product.publishedAt && (
               <div className={styles.publishedDate}>

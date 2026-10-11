@@ -19,6 +19,7 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     imageUrl: 'https://example.com/img.jpg',
     createdAt: '2026-09-01T00:00:00+02:00',
     publishedAt: '2026-09-01T00:00:00+02:00',
+    ageGroups: [],
     ...overrides,
   };
 }
@@ -168,5 +169,23 @@ describe('ProductCard', () => {
     render(<ProductCard product={discontinuedProduct} {...defaultProps} />);
     expect(screen.getByText('Nem elérhető')).toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  // Age groups
+  it('renders age group badges when ageGroups is non-empty', () => {
+    render(
+      <ProductCard
+        product={makeProduct({ ageGroups: ['2 éves kortól', '4 éves kortól'] })}
+        {...defaultProps}
+      />,
+    );
+    expect(screen.getByTestId('age-groups')).toBeInTheDocument();
+    expect(screen.getByText('2 éves kortól')).toBeInTheDocument();
+    expect(screen.getByText('4 éves kortól')).toBeInTheDocument();
+  });
+
+  it('does not render age group badges when ageGroups is empty', () => {
+    render(<ProductCard product={makeProduct({ ageGroups: [] })} {...defaultProps} />);
+    expect(screen.queryByTestId('age-groups')).not.toBeInTheDocument();
   });
 });

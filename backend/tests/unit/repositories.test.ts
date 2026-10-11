@@ -32,6 +32,7 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     imageUrl: null,
     createdAt: '2026-09-01T00:00:00+02:00',
     publishedAt: '2026-09-01T00:00:00+02:00',
+    ageGroups: [],
     ...overrides,
   };
 }

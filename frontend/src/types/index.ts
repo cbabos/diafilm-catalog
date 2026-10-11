@@ -15,6 +15,7 @@ export interface Product {
   imageUrl: string | null;
   createdAt: string;
   publishedAt: string;
+  ageGroups: string[]; // e.g. ['2 éves kortól', '4 éves kortól'] — empty if no age data
 }
 
 export interface BoughtItem {

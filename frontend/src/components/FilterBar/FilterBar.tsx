@@ -11,9 +11,11 @@ interface FilterBarProps {
   notInterestedCount: number;
   filteredProducts: RenderProduct[];
   availableSince: string | null;
+  ageFilter: string | null;
   onFilterChange: (filter: FilterType) => void;
   onToggleHideBought: () => void;
   onAvailableSinceChange: (date: string | null) => void;
+  onAgeFilterChange: (age: string | null) => void;
 }
 
 const FILTERS: { key: FilterType; label: string }[] = [
@@ -32,6 +34,12 @@ const FILTER_LABELS: Record<FilterType, string> = {
   'not-interested': 'Nem érdekel',
 };
 
+const AGE_FILTERS: { value: string; label: string }[] = [
+  { value: '2 éves kortól', label: '2é+' },
+  { value: '4 éves kortól', label: '4é+' },
+  { value: '6 éves kortól', label: '6é+' },
+];
+
 export function FilterBar({
   currentFilter,
   hideBought,
@@ -40,9 +48,11 @@ export function FilterBar({
   notInterestedCount,
   filteredProducts,
   availableSince,
+  ageFilter,
   onFilterChange,
   onToggleHideBought,
   onAvailableSinceChange,
+  onAgeFilterChange,
 }: FilterBarProps) {
   const [copied, setCopied] = useState(false);
 
@@ -81,6 +91,25 @@ export function FilterBar({
           {f.key === 'sale' && 'Akciós'}
         </button>
       ))}
+      <div className={styles.ageFilterGroup} data-testid="age-filter-group">
+        <button
+          className={`${styles.ageBtn} ${ageFilter === null ? styles.ageActive : ''}`}
+          onClick={() => onAgeFilterChange(null)}
+          data-testid="age-filter-all"
+        >
+          Összes kor
+        </button>
+        {AGE_FILTERS.map((af) => (
+          <button
+            key={af.value}
+            className={`${styles.ageBtn} ${ageFilter === af.value ? styles.ageActive : ''}`}
+            onClick={() => onAgeFilterChange(ageFilter === af.value ? null : af.value)}
+            data-testid={`age-filter-${af.label}`}
+          >
+            {af.label}
+          </button>
+        ))}
+      </div>
       <div className={styles.dateFilter}>
         <span className={styles.dateLabel}>Elérhető:</span>
         <input

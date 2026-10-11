@@ -19,6 +19,7 @@ function makeProduct(id: number, title: string, price: number): RenderProduct {
     imageUrl: null,
     createdAt: '2026-09-01T00:00:00+02:00',
     publishedAt: '2026-09-01T00:00:00+02:00',
+    ageGroups: [],
   };
 }
 
@@ -36,9 +37,11 @@ describe('FilterBar', () => {
     notInterestedCount: 2,
     filteredProducts,
     availableSince: null,
+    ageFilter: null,
     onFilterChange: vi.fn(),
     onToggleHideBought: vi.fn(),
     onAvailableSinceChange: vi.fn(),
+    onAgeFilterChange: vi.fn(),
   };
 
   it('renders all filter buttons', () => {
@@ -49,6 +52,47 @@ describe('FilterBar', () => {
     expect(screen.getByText('Megvett (5)')).toBeInTheDocument();
     expect(screen.getByText('Nem érdekel (2)')).toBeInTheDocument();
     expect(screen.getByText('Elrejti vásároltakat')).toBeInTheDocument();
+  });
+
+  it('renders age filter buttons', () => {
+    render(<FilterBar {...defaultProps} />);
+    expect(screen.getByText('Összes kor')).toBeInTheDocument();
+    expect(screen.getByText('2é+')).toBeInTheDocument();
+    expect(screen.getByText('4é+')).toBeInTheDocument();
+    expect(screen.getByText('6é+')).toBeInTheDocument();
+  });
+
+  it('calls onAgeFilterChange when clicking an age filter button', () => {
+    const onAgeFilterChange = vi.fn();
+    render(<FilterBar {...defaultProps} onAgeFilterChange={onAgeFilterChange} />);
+    fireEvent.click(screen.getByText('2é+'));
+    expect(onAgeFilterChange).toHaveBeenCalledWith('2 éves kortól');
+  });
+
+  it('calls onAgeFilterChange with null when clicking Összes kor', () => {
+    const onAgeFilterChange = vi.fn();
+    render(<FilterBar {...defaultProps} onAgeFilterChange={onAgeFilterChange} />);
+    fireEvent.click(screen.getByText('Összes kor'));
+    expect(onAgeFilterChange).toHaveBeenCalledWith(null);
+  });
+
+  it('toggles off age filter when clicking active age button', () => {
+    const onAgeFilterChange = vi.fn();
+    render(
+      <FilterBar
+        {...defaultProps}
+        ageFilter="2 éves kortól"
+        onAgeFilterChange={onAgeFilterChange}
+      />,
+    );
+    fireEvent.click(screen.getByText('2é+'));
+    expect(onAgeFilterChange).toHaveBeenCalledWith(null);
+  });
+
+  it('highlights active age filter', () => {
+    render(<FilterBar {...defaultProps} ageFilter="4 éves kortól" />);
+    const btn = screen.getByText('4é+');
+    expect(btn.className).toMatch(/ageActive/);
   });
 
   it('highlights active filter', () => {

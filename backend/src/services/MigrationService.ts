@@ -74,6 +74,7 @@ export class MigrationService {
             imageUrl: null,
             createdAt: '',
             publishedAt: '',
+            ageGroups: [],
           };
         } else {
           // Stub for unknown product
@@ -92,6 +93,7 @@ export class MigrationService {
             imageUrl: null,
             createdAt: '',
             publishedAt: '',
+            ageGroups: [],
           };
         }
       }
