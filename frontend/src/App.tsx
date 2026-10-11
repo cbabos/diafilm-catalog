@@ -45,9 +45,11 @@ function AppContent() {
   const filter = useUIStore((s) => s.filter);
   const hideBought = useUIStore((s) => s.hideBought);
   const searchTerm = useUIStore((s) => s.searchTerm);
+  const availableSince = useUIStore((s) => s.availableSince);
   const setFilter = useUIStore((s) => s.setFilter);
   const toggleHideBought = useUIStore((s) => s.toggleHideBought);
   const setSearchTerm = useUIStore((s) => s.setSearchTerm);
+  const setAvailableSince = useUIStore((s) => s.setAvailableSince);
   const activeModal = useUIStore((s) => s.activeModal);
   const openModal = useUIStore((s) => s.openModal);
   const closeModal = useUIStore((s) => s.closeModal);
@@ -114,6 +116,11 @@ function AppContent() {
       filtered = filtered.filter((p) => notInterestedIds.has(p.id));
     }
 
+    // Date filter: only show products published on or after the selected date
+    if (availableSince) {
+      filtered = filtered.filter((p) => p.publishedAt && p.publishedAt.slice(0, 10) >= availableSince);
+    }
+
     // Hide bought by default (except when in bought filter or searching)
     if (hideBought && filter === 'all' && !term) {
       filtered = filtered.filter((p) => !boughtIds.has(p.id));
@@ -125,7 +132,7 @@ function AppContent() {
     }
 
     return filtered;
-  }, [renderList, debouncedSearch, filter, selectedIds, boughtIds, notInterestedIds, hideBought]);
+  }, [renderList, debouncedSearch, filter, selectedIds, boughtIds, notInterestedIds, hideBought, availableSince]);
 
   // Selected products (for bottom bar + order modal)
   const selectedProducts = useMemo(() => {
@@ -215,6 +222,8 @@ function AppContent() {
         vendor: p.vendor,
         imageUrl: p.imageUrl,
         available: p.available,
+        createdAt: p.createdAt,
+        publishedAt: p.publishedAt,
       },
     }));
 
@@ -294,8 +303,10 @@ function AppContent() {
           boughtCount={boughtIds.size}
           notInterestedCount={notInterestedIds.size}
           filteredProducts={filteredProducts}
+          availableSince={availableSince}
           onFilterChange={setFilter}
           onToggleHideBought={toggleHideBought}
+          onAvailableSinceChange={setAvailableSince}
         />
       </Header>
 

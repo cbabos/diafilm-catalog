@@ -21,6 +21,8 @@ const mockProducts: Product[] = [
     productType: 'vetito',
     vendor: 'Diafilm Kft',
     imageUrl: 'https://example.com/vetito.jpg',
+    createdAt: '2026-09-01T00:00:00+02:00',
+    publishedAt: '2026-09-01T00:00:00+02:00',
   },
   {
     id: 1,
@@ -35,6 +37,8 @@ const mockProducts: Product[] = [
     productType: 'diafilm',
     vendor: 'Diafilm Kft',
     imageUrl: 'https://example.com/1.jpg',
+    createdAt: '2026-09-01T00:00:00+02:00',
+    publishedAt: '2026-09-01T00:00:00+02:00',
   },
   {
     id: 2,
@@ -49,6 +53,8 @@ const mockProducts: Product[] = [
     productType: 'diafilm',
     vendor: 'Diafilm Kft',
     imageUrl: 'https://example.com/2.jpg',
+    createdAt: '2026-09-01T00:00:00+02:00',
+    publishedAt: '2026-09-01T00:00:00+02:00',
   },
 ];
 
@@ -154,6 +160,7 @@ describe('App Integration', () => {
       hideBought: true,
       searchTerm: '',
       debouncedSearch: '',
+      availableSince: null,
       activeModal: null,
       priceHistoryProductId: null,
     });

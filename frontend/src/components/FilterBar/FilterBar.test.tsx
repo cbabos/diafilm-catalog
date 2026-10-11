@@ -17,6 +17,8 @@ function makeProduct(id: number, title: string, price: number): RenderProduct {
     productType: 'test',
     vendor: 'test',
     imageUrl: null,
+    createdAt: '2026-09-01T00:00:00+02:00',
+    publishedAt: '2026-09-01T00:00:00+02:00',
   };
 }
 
@@ -33,8 +35,10 @@ describe('FilterBar', () => {
     boughtCount: 5,
     notInterestedCount: 2,
     filteredProducts,
+    availableSince: null,
     onFilterChange: vi.fn(),
     onToggleHideBought: vi.fn(),
+    onAvailableSinceChange: vi.fn(),
   };
 
   it('renders all filter buttons', () => {

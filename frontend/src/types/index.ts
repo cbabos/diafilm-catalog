@@ -13,6 +13,8 @@ export interface Product {
   productType: string;
   vendor: string;
   imageUrl: string | null;
+  createdAt: string;
+  publishedAt: string;
 }
 
 export interface BoughtItem {

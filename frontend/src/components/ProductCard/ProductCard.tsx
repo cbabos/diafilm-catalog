@@ -104,6 +104,11 @@ export function ProductCard({
             {product.tags && product.tags.length > 0 && (
               <div className={styles.productTags}>{product.tags.slice(0, 4).join(' · ')}</div>
             )}
+            {product.publishedAt && (
+              <div className={styles.publishedDate}>
+                Elérhető: {formatDate(product.publishedAt)}
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -165,6 +170,11 @@ export function ProductCard({
             )}
             {product.tags && product.tags.length > 0 && (
               <div className={styles.productTags}>{product.tags.slice(0, 4).join(' · ')}</div>
+            )}
+            {product.publishedAt && (
+              <div className={styles.publishedDate}>
+                Elérhető: {formatDate(product.publishedAt)}
+              </div>
             )}
           </div>
         </a>

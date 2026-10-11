@@ -17,6 +17,8 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
     productType: 'diafilm',
     vendor: 'Diafilm Kft',
     imageUrl: 'https://example.com/img.jpg',
+    createdAt: '2026-09-01T00:00:00+02:00',
+    publishedAt: '2026-09-01T00:00:00+02:00',
     ...overrides,
   };
 }

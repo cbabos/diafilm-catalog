@@ -72,6 +72,8 @@ export class MigrationService {
             productType: '',
             vendor: 'Diafilm',
             imageUrl: null,
+            createdAt: '',
+            publishedAt: '',
           };
         } else {
           // Stub for unknown product
@@ -88,6 +90,8 @@ export class MigrationService {
             productType: '',
             vendor: '',
             imageUrl: null,
+            createdAt: '',
+            publishedAt: '',
           };
         }
       }

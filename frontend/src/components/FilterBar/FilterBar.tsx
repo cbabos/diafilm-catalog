@@ -10,8 +10,10 @@ interface FilterBarProps {
   boughtCount: number;
   notInterestedCount: number;
   filteredProducts: RenderProduct[];
+  availableSince: string | null;
   onFilterChange: (filter: FilterType) => void;
   onToggleHideBought: () => void;
+  onAvailableSinceChange: (date: string | null) => void;
 }
 
 const FILTERS: { key: FilterType; label: string }[] = [
@@ -37,8 +39,10 @@ export function FilterBar({
   boughtCount,
   notInterestedCount,
   filteredProducts,
+  availableSince,
   onFilterChange,
   onToggleHideBought,
+  onAvailableSinceChange,
 }: FilterBarProps) {
   const [copied, setCopied] = useState(false);
 
@@ -77,6 +81,26 @@ export function FilterBar({
           {f.key === 'sale' && 'Akciós'}
         </button>
       ))}
+      <div className={styles.dateFilter}>
+        <span className={styles.dateLabel}>Elérhető:</span>
+        <input
+          type="date"
+          className={styles.dateInput}
+          value={availableSince ?? ''}
+          onChange={(e) => onAvailableSinceChange(e.target.value || null)}
+          data-testid="available-since-input"
+        />
+        {availableSince && (
+          <button
+            className={styles.dateClear}
+            onClick={() => onAvailableSinceChange(null)}
+            data-testid="available-since-clear"
+            title="Szűrő törlése"
+          >
+            ×
+          </button>
+        )}
+      </div>
       <button
         className={`${styles.filterBtn} ${hideBought ? styles.active : ''}`}
         onClick={onToggleHideBought}

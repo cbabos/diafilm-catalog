@@ -13,6 +13,8 @@ export interface Product {
   productType: string;
   vendor: string;
   imageUrl: string | null;
+  createdAt: string;
+  publishedAt: string;
 }
 
 export interface BoughtItem {
@@ -68,6 +70,8 @@ export interface ShopifyProduct {
   tags: string | string[];
   product_type: string;
   vendor: string;
+  created_at: string;
+  published_at: string;
 }
 
 export interface ShopifyVariant {

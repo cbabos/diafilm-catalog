@@ -7,6 +7,7 @@ interface UIState {
   hideBought: boolean;
   searchTerm: string;
   debouncedSearch: string;
+  availableSince: string | null;
 
   // Modal state
   activeModal: ModalType;
@@ -17,6 +18,7 @@ interface UIState {
   toggleHideBought: () => void;
   setSearchTerm: (term: string) => void;
   setDebouncedSearch: (term: string) => void;
+  setAvailableSince: (date: string | null) => void;
   openModal: (modal: ModalType) => void;
   closeModal: () => void;
   setPriceHistoryProductId: (id: number | null) => void;
@@ -27,6 +29,7 @@ export const useUIStore = create<UIState>((set) => ({
   hideBought: true,
   searchTerm: '',
   debouncedSearch: '',
+  availableSince: null,
 
   activeModal: null,
   priceHistoryProductId: null,
@@ -35,6 +38,7 @@ export const useUIStore = create<UIState>((set) => ({
   toggleHideBought: () => set((state) => ({ hideBought: !state.hideBought })),
   setSearchTerm: (term) => set({ searchTerm: term }),
   setDebouncedSearch: (term) => set({ debouncedSearch: term }),
+  setAvailableSince: (date) => set({ availableSince: date }),
   openModal: (modal) => set({ activeModal: modal }),
   closeModal: () => set({ activeModal: null, priceHistoryProductId: null }),
   setPriceHistoryProductId: (id) => set({ priceHistoryProductId: id }),

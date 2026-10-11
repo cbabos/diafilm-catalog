@@ -76,6 +76,8 @@ export class ScraperService {
           productType: p.product_type ?? '',
           vendor: p.vendor ?? '',
           imageUrl: images[0]?.src ?? null,
+          createdAt: p.created_at ?? '',
+          publishedAt: p.published_at ?? '',
         });
       }
 

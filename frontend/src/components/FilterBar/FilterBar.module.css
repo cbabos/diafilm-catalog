@@ -54,3 +54,48 @@
   color: #fff;
   opacity: 1;
 }
+
+.dateFilter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dateLabel {
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.dateInput {
+  padding: 6px 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  color-scheme: dark;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.dateClear {
+  padding: 4px 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.dateClear:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
